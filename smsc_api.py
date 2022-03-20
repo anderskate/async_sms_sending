@@ -4,6 +4,7 @@ import urllib.parse
 from dataclasses import dataclass, asdict
 from contextvars import ContextVar
 from typing import Optional
+from unittest.mock import patch
 
 import asks
 import asyncclick as click
@@ -142,22 +143,19 @@ async def request_smsc(
 
 async def main():
     """"""
-    sender = os.getenv('SMSC_SENDER')
+    with patch(
+            '__main__.request_smsc', {'id': 52, 'cnt': 1}
+    ) as mock_sending_sms:
+        print(mock_sending_sms)
 
-    send_sms_response = await request_smsc(
-        'POST', 'send',
-        payload={
-            'phones': '79771725757',
-            'mes': 'Hello World!',
-            'fmt': 3, 'sender': sender,
-        }
-    )
-    sms_status_response = await request_smsc(
-        'GET', 'status',
-        payload={'phone': '79771725757', 'id': 35, 'fmt': 3},
-    )
-    print(send_sms_response)
-    print(sms_status_response)
+    with patch(
+            '__main__.request_smsc',
+            {
+                'status': 1, 'last_date': '20.03.2022 07:56:03',
+                'last_timestamp': 1647752163, 'err': 200,
+            }
+    ) as mock_getting_status:
+        print(mock_getting_status)
 
 
 if __name__ == '__main__':
