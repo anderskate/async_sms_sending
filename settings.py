@@ -1,0 +1,13 @@
+from pydantic import BaseSettings
+
+
+class Config(BaseSettings):
+    """Settings for app."""
+    SMSC_LOGIN: str
+    SMSC_PASSWORD: str
+    SMSC_SENDER: str
+    PHONES: str
+
+    class Config:
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
