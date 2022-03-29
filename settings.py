@@ -7,6 +7,7 @@ class Config(BaseSettings):
     SMSC_PASSWORD: str
     SMSC_SENDER: str
     PHONES: str
+    REDIS_URL: str
 
     class Config:
         env_file = '.env'
