@@ -65,27 +65,30 @@ async def posts():
 @app.websocket('/ws')
 async def ws():
     while True:
-        # data = await websocket.receive()
-        test_total_sms_count = 345
-        sms_one_percent = 345 // 100
-        for i in range(0, 345, sms_one_percent):
-
-            test_data = {
-              "msgType": "SMSMailingStatus",
-              "SMSMailings": [
-                {
-                  "timestamp": 1123131392.734,
-                  "SMSText": "Сегодня гроза! Будьте осторожны!",
-                  "mailingId": "1",
-                  "totalSMSAmount": 345,
-                  "deliveredSMSAmount": i,
-                  "failedSMSAmount": 0,
-                },
-              ]
+        sms_mailing_ids = await trio_asyncio.aio_as_trio(
+            app.db.list_sms_mailings()
+        )
+        sms_mailings = await trio_asyncio.aio_as_trio(
+            app.db.get_sms_mailings(*sms_mailing_ids)
+        )
+        formatted_sms_mailings = [
+            {
+                "timestamp": sms.get('created_at'),
+                "SMSText": sms.get('text'),
+                "mailingId": str(sms.get('sms_id')),
+                "totalSMSAmount": sms.get('phones_count'),
+                "deliveredSMSAmount": 0,
+                "failedSMSAmount": 0,
             }
-            await websocket.send_json(test_data)
-            await trio.sleep(1)
-        break
+            for sms in sms_mailings
+        ]
+
+        response = {
+          "msgType": "SMSMailingStatus",
+          "SMSMailings": formatted_sms_mailings,
+        }
+        await websocket.send_json(response)
+        await trio.sleep(3)
 
 
 @app.after_serving
